@@ -18,7 +18,7 @@ class PuzzleEngineTest {
         startingClues=emptySet()
     )
 
-    @Test fun correctCellBelongsToSolution(){ assertTrue(PuzzleEngine.isCorrect(level,Cell(1,2))); assertFalse(PuzzleEngine.isCorrect(level,Cell(1,1))) }
+    @Test fun correctCellBelongsToSolution(){ assertTrue(PuzzleEngine.isCorrect(level,Cell(1,3))); assertFalse(PuzzleEngine.isCorrect(level,Cell(1,1))) }
     @Test fun noTouchRejectsAnyAdjacentNeighbors(){
         val s=setOf(Cell(0,1),Cell(1,3),Cell(2,0),Cell(3,1))
         assertFalse(PuzzleEngine.isLegal(level,s))
