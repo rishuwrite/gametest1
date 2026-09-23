@@ -63,15 +63,20 @@ class GameViewModel(app: Application): AndroidViewModel(app) {
         candidates=if(cell in candidates) candidates-cell else candidates+cell
     }
 
-    // Swipe up on a cell = discard it. Swipe down = remove a normal discard.
-    // Auto-discarded cells are locked and cannot be restored.
-    fun swipeCell(cell:Cell, deltaX:Float, deltaY:Float){
+    // A swipe works in any direction. The direction is not the action:
+    // starting on a normal cell paints DISCARD while dragging; starting on a
+    // discarded cell paints RESTORE. This matches the smooth drag behavior.
+    fun shouldDiscardOnSwipe(cell:Cell):Boolean{
+        if(gameOver||completed)return false
+        val level=currentLevel ?: return false
+        if(cell in level.startingClues || cell in selected || cell in autoDiscarded)return false
+        return cell !in revealedEmpty
+    }
+
+    fun swipeCell(cell:Cell, discard:Boolean){
         if(gameOver||completed)return
         val level=currentLevel ?: return
         if(cell in level.startingClues || cell in selected || cell in autoDiscarded)return
-
-        if(kotlin.math.hypot(deltaX,deltaY) < 24f)return
-        val discard = if(kotlin.math.abs(deltaX) > kotlin.math.abs(deltaY)) deltaX < 0f else deltaY < 0f
         if(discard){
             revealedEmpty=revealedEmpty+cell
             candidates=candidates-cell
