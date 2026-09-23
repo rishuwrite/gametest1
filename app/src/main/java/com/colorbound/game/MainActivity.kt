@@ -166,8 +166,7 @@ fun ColorboundApp(vm:GameViewModel=viewModel()){
             var lastTapCell:Cell?=null
             awaitEachGesture {
                 val down=awaitFirstDown(requireUnconsumed=false)
-                val startCell=pointToCell(down.position,size.width.toFloat(),size.height.toFloat(),n,density)
-                if(startCell==null)return@awaitEachGesture
+                val startCell=pointToCell(down.position,size.width.toFloat(),size.height.toFloat(),n,density) ?: return@awaitEachGesture
 
                 var moved=false
                 var lastCell=startCell
