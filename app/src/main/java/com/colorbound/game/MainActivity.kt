@@ -169,18 +169,22 @@ fun ColorboundApp(vm:GameViewModel=viewModel()){
                 val startCell=pointToCell(down.position,size.width.toFloat(),size.height.toFloat(),n,density)
                 if(startCell==null)return@awaitEachGesture
 
-                var totalDx=0f
-                var totalDy=0f
                 var moved=false
+                var lastCell=startCell
+                val discardMode=vm.shouldDiscardOnSwipe(startCell)
                 drag(down.id){change->
                     moved=true
-                    totalDx+=change.position.x-change.previousPosition.x
-                    totalDy+=change.position.y-change.previousPosition.y
+                    val currentCell=pointToCell(change.position,size.width.toFloat(),size.height.toFloat(),n,density)
+                    if(currentCell!=null && currentCell!=lastCell){
+                        swipeLine(lastCell,currentCell,n){cell->
+                            vm.swipeCell(cell,discardMode)
+                        }
+                        lastCell=currentCell
+                    }
                     change.consume()
                 }
 
                 if(moved){
-                    if(kotlin.math.hypot(totalDx,totalDy)>=24f*density) vm.swipeCell(startCell,totalDx,totalDy)
                     lastTapCell=null
                 }else{
                     val now=System.currentTimeMillis()
@@ -220,6 +224,21 @@ fun ColorboundApp(vm:GameViewModel=viewModel()){
                 if(cc in level.startingClues){ drawCircle(Warning,radius=cell*.08f,center=Offset(x+cell*.78f,y+cell*.22f)) }
             }
         }
+    }
+}
+
+private fun swipeLine(from:Cell,to:Cell,n:Int,onCell:(Cell)->Unit){
+    var x0=from.col; var y0=from.row
+    val x1=to.col; val y1=to.row
+    val dx=kotlin.math.abs(x1-x0); val sx=if(x0<x1) 1 else -1
+    val dy=-kotlin.math.abs(y1-y0); val sy=if(y0<y1) 1 else -1
+    var err=dx+dy
+    while(true){
+        if(y0 in 0 until n && x0 in 0 until n) onCell(Cell(y0,x0))
+        if(x0==x1 && y0==y1) break
+        val e2=2*err
+        if(e2>=dy){err+=dy; x0+=sx}
+        if(e2<=dx){err+=dx; y0+=sy}
     }
 }
 
