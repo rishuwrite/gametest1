@@ -7,18 +7,20 @@ class PuzzleEngineTest {
     private val level = Level(
         id=1,size=4,difficulty="test",colors=4,
         grid=listOf(
+            listOf(0,0,0,1),
             listOf(0,0,1,1),
-            listOf(0,2,2,1),
-            listOf(3,2,2,1),
-            listOf(3,3,3,1)
+            listOf(2,2,3,1),
+            listOf(2,3,3,3)
         ),
-        solution=setOf(Cell(0,0),Cell(1,2),Cell(2,1),Cell(3,3)),
+        // One item per row, column and connected color region.
+        // No two items touch in any of the 8 surrounding directions.
+        solution=setOf(Cell(0,1),Cell(1,3),Cell(2,0),Cell(3,2)),
         startingClues=emptySet()
     )
 
     @Test fun correctCellBelongsToSolution(){ assertTrue(PuzzleEngine.isCorrect(level,Cell(1,2))); assertFalse(PuzzleEngine.isCorrect(level,Cell(1,1))) }
-    @Test fun noTouchRejectsOrthogonalNeighbors(){
-        val s=setOf(Cell(0,0),Cell(1,0),Cell(2,1),Cell(3,3))
+    @Test fun noTouchRejectsAnyAdjacentNeighbors(){
+        val s=setOf(Cell(0,1),Cell(1,3),Cell(2,0),Cell(3,1))
         assertFalse(PuzzleEngine.isLegal(level,s))
     }
     @Test fun validSolutionPasses(){ assertTrue(PuzzleEngine.isLegal(level,level.solution)) }
