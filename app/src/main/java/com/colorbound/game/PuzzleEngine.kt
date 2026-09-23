@@ -5,9 +5,17 @@ object PuzzleEngine {
 
     fun isComplete(level: Level, selected: Set<Cell>): Boolean = level.solution.all { it in selected }
 
-    fun hasOrthogonalConflict(cell: Cell, selected: Set<Cell>): Boolean =
-        Cell(cell.row-1,cell.col) in selected || Cell(cell.row+1,cell.col) in selected ||
-        Cell(cell.row,cell.col-1) in selected || Cell(cell.row,cell.col+1) in selected
+    // Items may not touch in ANY of the 8 surrounding directions,
+    // including diagonals.
+    fun hasOrthogonalConflict(cell: Cell, selected: Set<Cell>): Boolean {
+        for (dr in -1..1) {
+            for (dc in -1..1) {
+                if (dr == 0 && dc == 0) continue
+                if (Cell(cell.row + dr, cell.col + dc) in selected) return true
+            }
+        }
+        return false
+    }
 
     fun isLegal(level: Level, selected: Set<Cell>): Boolean {
         val n=level.size
