@@ -7,7 +7,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.drag
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -144,7 +146,7 @@ fun ColorboundApp(vm:GameViewModel=viewModel()){
             Spacer(Modifier.width(8.dp)); Text(formatTime(vm.elapsedSeconds),color=Muted,fontSize=13.sp)
         }
         Spacer(Modifier.height(8.dp))
-        Text("Every region, row and column gets one prism. Neighbors cannot touch.",color=Muted,fontSize=12.sp)
+        Text("Every region, row and column gets one prism. Neighbors cannot touch. Swipe up to discard • down to restore.",color=Muted,fontSize=12.sp)
         Spacer(Modifier.height(10.dp))
         PuzzleBoard(vm,level,Modifier.fillMaxWidth().weight(1f))
         Spacer(Modifier.height(10.dp))
@@ -160,7 +162,36 @@ fun ColorboundApp(vm:GameViewModel=viewModel()){
         val n=level.size
         val density=androidx.compose.ui.platform.LocalDensity.current.density
         Canvas(Modifier.fillMaxSize().pointerInput(level.id,vm.gameOver,vm.completed,density){
-            detectTapGestures(onDoubleTap={p->val cell=pointToCell(p,size.width.toFloat(),size.height.toFloat(),n,density);if(cell!=null)vm.doubleTap(cell)},onTap={p->val cell=pointToCell(p,size.width.toFloat(),size.height.toFloat(),n,density);if(cell!=null)vm.tap(cell)})
+            var lastTapTime=0L
+            var lastTapCell:Cell?=null
+            awaitEachGesture {
+                val down=awaitFirstDown(requireUnconsumed=false)
+                val startCell=pointToCell(down.position,size.width.toFloat(),size.height.toFloat(),n,density)
+                if(startCell==null)return@awaitEachGesture
+
+                var totalDy=0f
+                var moved=false
+                drag(down.id){change,amount->
+                    moved=true
+                    totalDy+=amount.y
+                    change.consume()
+                }
+
+                if(moved){
+                    if(kotlin.math.abs(totalDy)>=24f*density) vm.swipeCell(startCell,totalDy)
+                    lastTapCell=null
+                }else{
+                    val now=System.currentTimeMillis()
+                    if(lastTapCell==startCell && now-lastTapTime<=350L){
+                        lastTapCell=null
+                        vm.doubleTap(startCell)
+                    }else{
+                        lastTapCell=startCell
+                        lastTapTime=now
+                        vm.tap(startCell)
+                    }
+                }
+            }
         }){
             val gap=4.dp.toPx(); val cell=(size.minDimension-gap*(n-1))/n
             val board=(cell*n+gap*(n-1)); val ox=(size.width-board)/2; val oy=(size.height-board)/2
@@ -171,9 +202,13 @@ fun ColorboundApp(vm:GameViewModel=viewModel()){
                 drawRoundRect(color,topLeft=Offset(x,y),size=Size(cell,cell),cornerRadius=CornerRadius(cell*.18f))
                 drawPattern(rid,Offset(x,y),cell,color)
                 val cc=Cell(r,c)
-                if(cc in vm.revealedEmpty){
-                    drawLine(Ink.copy(alpha=.75f),Offset(x+cell*.32f,y+cell*.32f),Offset(x+cell*.68f,y+cell*.68f),2f)
-                    drawLine(Ink.copy(alpha=.75f),Offset(x+cell*.68f,y+cell*.32f),Offset(x+cell*.32f,y+cell*.68f),2f)
+                if(cc in vm.revealedEmpty || cc in vm.autoDiscarded){
+                    val alpha=if(cc in vm.autoDiscarded) .48f else .75f
+                    drawLine(Ink.copy(alpha=alpha),Offset(x+cell*.32f,y+cell*.32f),Offset(x+cell*.68f,y+cell*.68f),2f)
+                    drawLine(Ink.copy(alpha=alpha),Offset(x+cell*.68f,y+cell*.32f),Offset(x+cell*.32f,y+cell*.68f),2f)
+                    if(cc in vm.autoDiscarded){
+                        drawCircle(Accent.copy(alpha=.7f),radius=cell*.055f,center=Offset(x+cell*.78f,y+cell*.78f))
+                    }
                 }
                 if(cc in vm.candidates){ drawCircle(Ink.copy(alpha=.9f),radius=cell*.10f,center=Offset(x+cell/2,y+cell/2)) }
                 if(cc in vm.selected){
