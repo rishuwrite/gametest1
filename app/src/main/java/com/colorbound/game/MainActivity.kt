@@ -171,9 +171,9 @@ fun ColorboundApp(vm:GameViewModel=viewModel()){
 
                 var totalDy=0f
                 var moved=false
-                drag(down.id){change,amount->
+                drag(down.id){change->
                     moved=true
-                    totalDy+=amount.y
+                    totalDy+=change.positionChange().y
                     change.consume()
                 }
 
