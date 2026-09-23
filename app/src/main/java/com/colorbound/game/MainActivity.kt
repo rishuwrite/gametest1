@@ -146,7 +146,7 @@ fun ColorboundApp(vm:GameViewModel=viewModel()){
             Spacer(Modifier.width(8.dp)); Text(formatTime(vm.elapsedSeconds),color=Muted,fontSize=13.sp)
         }
         Spacer(Modifier.height(8.dp))
-        Text("Every region, row and column gets one prism. Neighbors cannot touch. Swipe up/left to discard • down/right to restore.",color=Muted,fontSize=12.sp)
+        Text("Every region, row and column gets one prism. Neighbors cannot touch. Drag from any normal cell to discard • drag from a discarded cell to restore. Auto-discarded color cells are locked.",color=Muted,fontSize=12.sp)
         Spacer(Modifier.height(10.dp))
         PuzzleBoard(vm,level,Modifier.fillMaxWidth().weight(1f))
         Spacer(Modifier.height(10.dp))
@@ -208,11 +208,18 @@ fun ColorboundApp(vm:GameViewModel=viewModel()){
                 drawPattern(rid,Offset(x,y),cell,color)
                 val cc=Cell(r,c)
                 if(cc in vm.revealedEmpty || cc in vm.autoDiscarded){
-                    val alpha=if(cc in vm.autoDiscarded) .48f else .75f
-                    drawLine(Ink.copy(alpha=alpha),Offset(x+cell*.32f,y+cell*.32f),Offset(x+cell*.68f,y+cell*.68f),2f)
-                    drawLine(Ink.copy(alpha=alpha),Offset(x+cell*.68f,y+cell*.32f),Offset(x+cell*.32f,y+cell*.68f),2f)
-                    if(cc in vm.autoDiscarded){
-                        drawCircle(Accent.copy(alpha=.7f),radius=cell*.055f,center=Offset(x+cell*.78f,y+cell*.78f))
+                    val isAuto=cc in vm.autoDiscarded
+                    val alpha=if(isAuto) .78f else .70f
+                    if(isAuto){
+                        // Strong visual lock: a bright border, double X and center ring.
+                        drawRoundRect(Accent.copy(alpha=.72f),topLeft=Offset(x+cell*.055f,y+cell*.055f),size=Size(cell*.89f,cell*.89f),cornerRadius=CornerRadius(cell*.14f),style=Stroke(width=cell*.045f))
+                        drawLine(Color.White.copy(alpha=.82f),Offset(x+cell*.25f,y+cell*.25f),Offset(x+cell*.75f,y+cell*.75f),cell*.075f,StrokeCap.Round)
+                        drawLine(Color.White.copy(alpha=.82f),Offset(x+cell*.75f,y+cell*.25f),Offset(x+cell*.25f,y+cell*.75f),cell*.075f,StrokeCap.Round)
+                        drawCircle(Accent.copy(alpha=.95f),radius=cell*.12f,center=Offset(x+cell*.5f,y+cell*.5f),style=Stroke(width=cell*.035f))
+                        drawCircle(Accent.copy(alpha=.95f),radius=cell*.035f,center=Offset(x+cell*.5f,y+cell*.5f))
+                    }else{
+                        drawLine(Ink.copy(alpha=alpha),Offset(x+cell*.30f,y+cell*.30f),Offset(x+cell*.70f,y+cell*.70f),cell*.045f,StrokeCap.Round)
+                        drawLine(Ink.copy(alpha=alpha),Offset(x+cell*.70f,y+cell*.30f),Offset(x+cell*.30f,y+cell*.70f),cell*.045f,StrokeCap.Round)
                     }
                 }
                 if(cc in vm.candidates){ drawCircle(Ink.copy(alpha=.9f),radius=cell*.10f,center=Offset(x+cell/2,y+cell/2)) }
@@ -305,7 +312,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawPattern(rid:Int
         SettingRow("High contrast","Boosts tile and text separation",vm.highContrast,vm::setHighContrast)
         Spacer(Modifier.height(20.dp))
         Card(colors=CardDefaults.cardColors(containerColor=Surface),shape=RoundedCornerShape(20.dp)){
-            Column(Modifier.padding(18.dp)){Text("HINT TOKENS",fontWeight=FontWeight.Black);Text("${vm.hintTokens} available",fontSize=26.sp,color=Accent);Text("Tokens can be earned from completed levels and optional rewards in a future online layer. The 1000-level campaign remains playable offline.",color=Muted,fontSize=12.sp);Spacer(Modifier.height(10.dp));SecondaryButton("CLAIM DAILY +3"){vm.addTokens(3)}}
+            Column(Modifier.padding(18.dp)){Text("HINT TOKENS",fontWeight=FontWeight.Black);Text("${vm.hintTokens} available",fontSize=26.sp,color=Accent);Text("Tokens can be earned from completed levels and optional rewards in a future online layer. The 1000-level campaign remains playable offline.",color=Muted,fontSize=12.sp);Spacer(Modifier.height(10.dp));SecondaryButton("CLAIM DAILY +3"){vm.claimDailyTokens()}}
         }
     }
 }
