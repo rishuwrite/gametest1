@@ -65,15 +65,17 @@ class GameViewModel(app: Application): AndroidViewModel(app) {
 
     // Swipe up on a cell = discard it. Swipe down = remove a normal discard.
     // Auto-discarded cells are locked and cannot be restored.
-    fun swipeCell(cell:Cell, deltaY:Float){
+    fun swipeCell(cell:Cell, deltaX:Float, deltaY:Float){
         if(gameOver||completed)return
         val level=currentLevel ?: return
         if(cell in level.startingClues || cell in selected || cell in autoDiscarded)return
 
-        if(deltaY < 0f){
+        if(kotlin.math.hypot(deltaX,deltaY) < 24f)return
+        val discard = if(kotlin.math.abs(deltaX) > kotlin.math.abs(deltaY)) deltaX < 0f else deltaY < 0f
+        if(discard){
             revealedEmpty=revealedEmpty+cell
             candidates=candidates-cell
-        }else if(deltaY > 0f){
+        }else{
             revealedEmpty=revealedEmpty-cell
         }
     }
