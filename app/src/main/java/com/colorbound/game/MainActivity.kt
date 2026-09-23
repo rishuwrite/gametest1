@@ -146,7 +146,7 @@ fun ColorboundApp(vm:GameViewModel=viewModel()){
             Spacer(Modifier.width(8.dp)); Text(formatTime(vm.elapsedSeconds),color=Muted,fontSize=13.sp)
         }
         Spacer(Modifier.height(8.dp))
-        Text("Every region, row and column gets one prism. Neighbors cannot touch. Swipe up to discard • down to restore.",color=Muted,fontSize=12.sp)
+        Text("Every region, row and column gets one prism. Neighbors cannot touch. Swipe up/left to discard • down/right to restore.",color=Muted,fontSize=12.sp)
         Spacer(Modifier.height(10.dp))
         PuzzleBoard(vm,level,Modifier.fillMaxWidth().weight(1f))
         Spacer(Modifier.height(10.dp))
@@ -169,16 +169,18 @@ fun ColorboundApp(vm:GameViewModel=viewModel()){
                 val startCell=pointToCell(down.position,size.width.toFloat(),size.height.toFloat(),n,density)
                 if(startCell==null)return@awaitEachGesture
 
+                var totalDx=0f
                 var totalDy=0f
                 var moved=false
                 drag(down.id){change->
                     moved=true
+                    totalDx+=change.position.x-change.previousPosition.x
                     totalDy+=change.position.y-change.previousPosition.y
                     change.consume()
                 }
 
                 if(moved){
-                    if(kotlin.math.abs(totalDy)>=24f*density) vm.swipeCell(startCell,totalDy)
+                    if(kotlin.math.hypot(totalDx,totalDy)>=24f*density) vm.swipeCell(startCell,totalDx,totalDy)
                     lastTapCell=null
                 }else{
                     val now=System.currentTimeMillis()
