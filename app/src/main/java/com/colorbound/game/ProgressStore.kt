@@ -22,6 +22,16 @@ class ProgressStore(context: Context) {
     var highContrast: Boolean
         get()=prefs.getBoolean("highContrast",false)
         set(v)=prefs.edit().putBoolean("highContrast",v).apply()
+    private var lastDailyClaim: String
+        get()=prefs.getString("lastDailyClaim","") ?: ""
+        set(v)=prefs.edit().putString("lastDailyClaim",v).apply()
+
+    fun claimDailyTokens(): Boolean {
+        val today=java.text.SimpleDateFormat("yyyy-MM-dd",java.util.Locale.US).format(java.util.Date())
+        if(lastDailyClaim==today) return false
+        lastDailyClaim=today
+        return true
+    }
 
     fun isCompleted(id:Int)=prefs.getBoolean("completed_$id",false)
     fun setCompleted(id:Int) { prefs.edit().putBoolean("completed_$id",true).apply(); if(id<1000 && highestUnlocked<id+1) highestUnlocked=id+1 }
