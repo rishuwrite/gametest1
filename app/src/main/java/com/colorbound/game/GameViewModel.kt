@@ -165,8 +165,19 @@ class GameViewModel(app: Application): AndroidViewModel(app) {
     }
 
     fun retry(){ currentLevel?.id?.let(::startLevel) }
-    fun nextLevel(){ currentLevel?.let { if(it.id<1000) startLevel(it.id+1) } }
+    fun nextLevel(){
+        val id=currentLevel?.id ?: return
+        if(id<1000){
+            store.highestUnlocked=max(store.highestUnlocked,id+1)
+            startLevel(id+1)
+        }
+    }
     fun addTokens(amount:Int=3){ hintTokens+=amount; store.hintTokens=hintTokens }
+    fun claimDailyTokens():Boolean{
+        if(!store.claimDailyTokens()) return false
+        addTokens(3)
+        return true
+    }
 
     fun setSound(v:Boolean){store.sound=v}
     fun setVibration(v:Boolean){store.vibration=v}
