@@ -1,0 +1,1337 @@
+MASTER DEVELOPMENT PROMPT — ORIGINAL COLOR REGION LOGIC PUZZLE GAME + ANDROID APK
+
+You are a senior mobile game developer, puzzle-game designer, UI/UX designer, puzzle-generation engineer, and Android build engineer.
+
+I want you to BUILD A COMPLETE ORIGINAL ANDROID PUZZLE GAME from scratch.
+
+IMPORTANT:
+This game is inspired only by the general concept of color-based logic puzzles. It must NOT copy Meowdoku, Oakever Games, its artwork, UI, animations, icons, sounds, branding, layouts, assets, text, or source code.
+
+The supplied reference screenshot is ONLY for understanding the general gameplay concept.
+
+Create a completely ORIGINAL visual identity, theme, artwork style, UI, colors, icons, animations, sounds, and game presentation.
+
+==================================================
+1. GAME CONCEPT
+==================================================
+
+Create an original logic puzzle game based on placing one hidden item in each:
+
+1. COLOR REGION
+2. ROW
+3. COLUMN
+
+Additional mandatory rule:
+
+4. ITEMS CANNOT TOUCH ORTHOGONALLY.
+
+Therefore:
+
+- An item cannot touch another item above it.
+- An item cannot touch another item below it.
+- An item cannot touch another item on its left.
+- An item cannot touch another item on its right.
+
+Diagonal touching IS allowed.
+
+Every puzzle has a predetermined valid solution.
+
+The normal game must NOT depend on random puzzle generation.
+
+==================================================
+2. NON-NEGOTIABLE COLOR REGION RULE
+==================================================
+
+THIS IS A CORE GAME RULE AND MUST NEVER BE VIOLATED.
+
+EVERY COLOR MUST REPRESENT EXACTLY ONE CONNECTED REGION.
+
+Definition:
+
+1. Every color corresponds to ONE region.
+2. All cells belonging to the same color MUST be connected through shared EDGES.
+3. Diagonal contact DOES NOT count as connectivity.
+4. A color may NOT appear as two or more separate/disconnected regions.
+5. Every color region must contain EXACTLY ONE correct item in the official solution.
+6. The number of color regions MUST equal the number of items in the solution.
+7. Every region must have one and only one solution item.
+
+Example of VALID region:
+
+BLUE BLUE BLUE
+BLUE BLUE
+BLUE BLUE BLUE
+
+All blue cells are connected through shared edges.
+
+Example of INVALID region:
+
+BLUE BLUE       BLUE
+BLUE            BLUE
+
+These blue cells form disconnected groups and MUST NOT be allowed.
+
+Another INVALID example:
+
+BLUE
+    BLUE
+
+Diagonal-only contact does NOT make a connected region.
+
+==================================================
+3. REGION VALIDATION ALGORITHM
+==================================================
+
+Before a level can be saved:
+
+FOR EACH COLOR:
+
+1. Find every cell having that color.
+2. Select the first cell.
+3. Perform a 4-direction flood-fill / BFS / DFS:
+   - UP
+   - DOWN
+   - LEFT
+   - RIGHT
+4. Count all reachable cells.
+5. Compare reachable-cell count with total cells of that color.
+
+If:
+
+reachableCells != totalColorCells
+
+THEN:
+
+LEVEL = INVALID
+
+Discard the level.
+
+A color is valid ONLY when all cells of that color are reachable from every other cell through shared edges.
+
+==================================================
+4. REGION + SOLUTION VALIDATION
+==================================================
+
+For EVERY color region:
+
+solutionItemsInsideRegion MUST equal 1.
+
+Therefore:
+
+FOR EACH REGION:
+
+    itemCount = number of solution items inside region
+
+    if itemCount != 1:
+        LEVEL = INVALID
+
+The validator must check BOTH:
+
+A. Region connectivity
+B. Exactly one solution item per region
+
+Both conditions are mandatory.
+
+==================================================
+5. FIXED 1000-LEVEL CAMPAIGN
+==================================================
+
+The game MUST contain exactly 1000 FIXED LEVELS.
+
+Levels must be stored as deterministic data.
+
+DO NOT generate a different puzzle every time the game starts.
+
+If the player completes Level 70 today and opens the game next week, Level 70 must remain EXACTLY the same.
+
+Levels:
+
+1 through 1000
+
+All 1000 levels must be playable.
+
+Every level must contain:
+
+- Level ID
+- Grid size
+- Difficulty
+- Color-region layout
+- Correct solution
+- Optional starting clues
+- Maximum mistakes
+- Hint configuration
+- Metadata required by the game engine
+
+==================================================
+6. LEVEL GENERATION
+==================================================
+
+The 1000 levels may be generated using a deterministic generator during development, but the SHIPPED GAME must use FIXED EXPORTED LEVEL DATA.
+
+The final repository must contain the generated level data.
+
+The game must NOT generate random levels at runtime.
+
+The generation pipeline must be:
+
+Generate valid solution
+        ↓
+Generate connected color regions
+        ↓
+Ensure one region per solution item
+        ↓
+Validate connectivity
+        ↓
+Validate row rule
+        ↓
+Validate column rule
+        ↓
+Validate no-touch rule
+        ↓
+Check solution uniqueness
+        ↓
+Calculate difficulty
+        ↓
+Export fixed level
+        ↓
+Run final validator
+
+If a level fails validation:
+
+DISCARD IT.
+
+Never ship an invalid level.
+
+==================================================
+7. REGION GENERATION REQUIREMENT
+==================================================
+
+DO NOT randomly assign colors to cells and hope they form valid regions.
+
+Each color region must be intentionally constructed as one connected orthogonal territory.
+
+The generator must ensure:
+
+- exactly N colors for an N×N grid
+- exactly N connected regions
+- each color has exactly one connected component
+- each region contains exactly one official solution item
+
+For an 8×8 board:
+
+8 colors
+8 connected regions
+8 solution items
+8 rows
+8 columns
+
+For a 15×15 board:
+
+15 colors
+15 connected regions
+15 solution items
+15 rows
+15 columns
+
+==================================================
+8. COLOR REGION SHAPES
+==================================================
+
+Color regions should have interesting organic shapes.
+
+Use combinations of:
+
+- irregular shapes
+- L-shapes
+- zig-zags
+- staircases
+- narrow corridors
+- asymmetric shapes
+- large regions
+- small regions
+- winding regions
+
+Avoid simple rectangular stripes whenever possible.
+
+However, every region MUST remain connected through shared edges.
+
+Do not create disconnected islands of the same color.
+
+==================================================
+9. GRID SIZES
+==================================================
+
+Support:
+
+8×8
+9×9
+10×10
+11×11
+12×12
+13×13
+14×14
+15×15
+
+Use grid sizes progressively according to difficulty.
+
+Suggested progression:
+
+Early:
+8×8
+
+Middle:
+9×9 to 12×12
+
+Advanced:
+13×13 to 15×15
+
+Do not increase grid size solely for difficulty. Puzzle logic should also become harder.
+
+==================================================
+10. LEVEL DIFFICULTY
+==================================================
+
+Difficulty should gradually increase.
+
+Suggested campaign:
+
+Levels 1–50:
+Very Easy
+
+Levels 51–150:
+Easy
+
+Levels 151–300:
+Normal
+
+Levels 301–500:
+Medium
+
+Levels 501–700:
+Hard
+
+Levels 701–850:
+Very Hard
+
+Levels 851–950:
+Expert
+
+Levels 951–1000:
+Master
+
+But difficulty must be based on actual puzzle complexity.
+
+Do not make difficulty depend only on grid size.
+
+Use factors such as:
+
+- number of logical deductions required
+- number of candidate cells
+- region complexity
+- ambiguity
+- forced moves
+- chain length
+- number of deductions required
+- solver difficulty
+
+==================================================
+11. UNIQUE SOLUTION
+==================================================
+
+Every shipped level should preferably have EXACTLY ONE valid solution.
+
+The solver must count solutions.
+
+If solution count != 1:
+
+LEVEL = INVALID
+
+Do not ship ambiguous levels.
+
+The uniqueness solver must enforce:
+
+- one item per row
+- one item per column
+- one item per connected color region
+- no orthogonal touching
+
+==================================================
+12. FIXED SOLUTION DATA
+==================================================
+
+Do NOT calculate the official solution every time the player opens a level.
+
+Store the official solution for every level.
+
+Example:
+
+{
+  "id": 1,
+  "size": 8,
+  "difficulty": "easy",
+  "regions": [...],
+  "solution": [
+    [0, 5],
+    [1, 7],
+    [2, 3]
+  ]
+}
+
+Use an efficient format.
+
+The game loads the fixed level and compares player actions against the official solution.
+
+==================================================
+13. PLAYER INTERACTION
+==================================================
+
+The player must have an intuitive mobile interaction system.
+
+Support:
+
+SINGLE TAP:
+Place/check an item.
+
+SECOND TAP:
+Mark the cell as a candidate / possible item.
+
+DOUBLE TAP:
+Toggle a checking/candidate state if practical.
+
+Candidate marks and confirmed items must be visually different.
+
+Do not make normal exploration unnecessarily consume lives.
+
+==================================================
+14. THREE-MISTAKE SYSTEM
+==================================================
+
+The player has exactly 3 mistake chances.
+
+Display an original life indicator such as:
+
+♥ ♥ ♥
+
+or another original visual.
+
+If the player confirms an incorrect item:
+
+- deduct one life
+- provide clear visual feedback
+- keep the level active if lives remain
+
+After 3 mistakes:
+
+GAME OVER / LEVEL FAILED
+
+Provide:
+
+RETRY LEVEL
+
+and:
+
+RETURN TO LEVEL MAP
+
+Do not automatically skip the level.
+
+The fixed level remains unchanged when retrying.
+
+==================================================
+15. HINT SYSTEM — THREE DIFFERENT HINTS
+==================================================
+
+Create THREE genuinely different hint types.
+
+------------------------------------------
+HINT 1 — ITEM FINDER
+------------------------------------------
+
+Directly reveal ONE correct unresolved item.
+
+When activated:
+
+- choose one unresolved official solution position
+- reveal it
+- animate/highlight it
+- mark it permanently solved
+- update the puzzle state
+
+Do not reveal the entire solution.
+
+------------------------------------------
+HINT 2 — IDEA TELLER / LOGIC HINT
+------------------------------------------
+
+Analyze the current board state and find a real logical deduction.
+
+Examples:
+
+"Blue already has an item in column 4, so the other blue cells in column 4 can be eliminated."
+
+"Row 6 already contains an item, so the remaining cells in that row cannot contain another item."
+
+"These are the only possible cells for the green region."
+
+The hint must:
+
+1. Analyze the current state.
+2. Find an actual deduction.
+3. Explain the deduction in simple language.
+4. Highlight relevant cells.
+5. Optionally apply the logical elimination automatically.
+
+Do NOT show a random generic explanation.
+
+The explanation must correspond to the actual current puzzle state.
+
+------------------------------------------
+HINT 3 — THREE-CELL REVEAL
+------------------------------------------
+
+Select THREE random unresolved cells.
+
+For each selected cell:
+
+- if it contains an official solution item, reveal the item
+- otherwise reveal it as an empty/non-item cell
+
+Do not select duplicate cells.
+
+The selected cells must be unresolved before the hint.
+
+This hint must never reveal more than three cells.
+
+==================================================
+16. HINT ECONOMY
+==================================================
+
+Use a simple hint token system.
+
+Example:
+
+HINT TOKENS
+
+Tokens can be earned from:
+
+- completing levels
+- daily rewards
+- optional rewarded advertisements
+- achievements
+
+The core campaign must remain playable without payment.
+
+Do not require purchases to progress through the 1000 fixed levels.
+
+==================================================
+17. LEVEL COMPLETION
+==================================================
+
+A level is complete only when:
+
+- every row has exactly one item
+- every column has exactly one item
+- every connected color region has exactly one item
+- no items touch orthogonally
+
+Show an original success animation.
+
+Example:
+
+PUZZLE SOLVED!
+
+Display:
+
+- level number
+- mistakes
+- hints used
+- completion time
+- stars/score
+
+Then show:
+
+NEXT LEVEL
+
+==================================================
+18. EASY/HARD RELATED PATTERN SYSTEM
+==================================================
+
+I want selected groups of levels to have related underlying patterns.
+
+Example:
+
+Level 20:
+Easy Pattern A
+
+Level 21:
+Hard Pattern A
+
+The harder version may use:
+
+- fewer obvious deductions
+- more complex connected regions
+- more ambiguous candidates
+- longer deduction chains
+
+Do NOT simply make the board bigger.
+
+The relationship should be logical, while each level remains a fixed independent puzzle.
+
+==================================================
+19. LEVEL MAP
+==================================================
+
+Create a level-selection screen for all 1000 levels.
+
+Organize levels into groups.
+
+Example:
+
+1–50
+51–100
+101–150
+...
+951–1000
+
+Initially:
+
+Level 1 = unlocked
+
+After completing Level 1:
+
+Level 2 = unlocked
+
+Continue sequentially.
+
+Completed levels remain replayable.
+
+Show visual progress.
+
+==================================================
+20. SAVE SYSTEM
+==================================================
+
+Use local persistent storage.
+
+Save:
+
+- highest unlocked level
+- completed levels
+- stars
+- best score
+- best time
+- mistakes
+- hint usage
+- hint tokens
+- sound setting
+- vibration setting
+- accessibility settings
+
+Progress must survive app restart.
+
+No account is required for the core game.
+
+==================================================
+21. ORIGINAL VISUAL IDENTITY
+==================================================
+
+DO NOT COPY THE REFERENCE SCREENSHOT.
+
+Do not use:
+
+- Meowdoku name
+- Oakever branding
+- copied cat characters
+- copied cat silhouettes
+- copied icons
+- same UI layout
+- same color palette
+- same typography
+- same board appearance
+- same background
+- same animations
+- same hint icons
+- same sounds
+- same artwork
+- same text
+
+Create a completely original theme.
+
+Suggested temporary concept:
+
+"Colorbound: Logic Garden"
+
+You may choose a better ORIGINAL name.
+
+Use an original visual theme such as:
+
+- crystals
+- abstract geometric creatures
+- magical symbols
+- nature-inspired shapes
+- original fantasy objects
+
+Do not imitate Meowdoku's visual style.
+
+==================================================
+22. ACCESSIBILITY
+==================================================
+
+Do not rely only on color.
+
+Each region should optionally have a:
+
+- pattern
+- texture
+- symbol
+
+Add settings:
+
+- Color Blind Mode
+- High Contrast Mode
+- Sound ON/OFF
+- Vibration ON/OFF
+
+==================================================
+23. GAME SCREEN
+==================================================
+
+Create an original gameplay layout containing:
+
+TOP:
+
+Back
+Level
+Difficulty
+Lives
+
+CENTER:
+
+Puzzle grid
+
+BOTTOM:
+
+Three hint controls
+
+Example:
+
+[ ITEM FINDER ]
+[ LOGIC IDEA ]
+[ 3-CELL REVEAL ]
+
+Do not copy the screenshot's exact layout.
+
+Make the UI responsive for different Android screen sizes.
+
+==================================================
+24. SCORE SYSTEM
+==================================================
+
+Calculate score from:
+
+- base level score
+- speed bonus
+- mistake bonus
+- low-hint bonus
+
+Do not excessively punish hint usage.
+
+Display:
+
+Score
+Best Score
+Stars
+
+Optionally:
+
+1–3 stars per level.
+
+==================================================
+25. OFFLINE-FIRST GAMEPLAY
+==================================================
+
+The core game must work completely offline.
+
+No internet should be required for:
+
+- playing levels
+- loading levels
+- solving puzzles
+- saving progress
+- using normal hints
+
+Internet may be used for optional:
+
+- advertisements
+- analytics
+- future cloud backup
+
+==================================================
+26. ANDROID DEVELOPMENT
+==================================================
+
+Create a complete Android project.
+
+Preferred stack:
+
+Kotlin
+Jetpack Compose
+Material 3
+
+Use a modern, maintainable architecture.
+
+The project must produce a working Android APK.
+
+==================================================
+27. GITHUB ACTIONS
+==================================================
+
+Create:
+
+.github/workflows/build-apk.yml
+
+GitHub Actions must:
+
+1. Checkout repository.
+2. Set up JDK.
+3. Set up Android SDK.
+4. Configure Gradle.
+5. Run unit tests.
+6. Run the complete 1000-level validator.
+7. Build the APK.
+8. Upload the APK as a GitHub Actions artifact.
+
+Example artifact:
+
+ColorBound-debug.apk
+
+If signing secrets are available, support a release build too.
+
+The project must be buildable from GitHub Actions without Android Studio.
+
+==================================================
+28. PROJECT STRUCTURE
+==================================================
+
+Use a clean structure similar to:
+
+/
+├── app/
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/
+│   │   │   ├── res/
+│   │   │   └── assets/
+│   │   │       └── levels/
+│   │   │           ├── levels_001_100.json
+│   │   │           ├── levels_101_200.json
+│   │   │           ├── levels_201_300.json
+│   │   │           ├── levels_301_400.json
+│   │   │           ├── levels_401_500.json
+│   │   │           ├── levels_501_600.json
+│   │   │           ├── levels_601_700.json
+│   │   │           ├── levels_701_800.json
+│   │   │           ├── levels_801_900.json
+│   │   │           └── levels_901_1000.json
+│   │   └── test/
+│   └── build.gradle.kts
+│
+├── level-generator/
+│   ├── generator/
+│   ├── validator/
+│   └── README.md
+│
+├── .github/
+│   └── workflows/
+│       └── build-apk.yml
+│
+├── README.md
+├── LICENSE
+└── .gitignore
+
+You may improve the architecture if necessary.
+
+==================================================
+29. LEVEL DATA SCHEMA
+==================================================
+
+Every fixed level should contain enough data to reproduce it exactly.
+
+Example:
+
+{
+  "id": 1,
+  "size": 8,
+  "difficulty": "easy",
+  "colors": 8,
+  "grid": [
+    [0,0,0,1,1,1,2,2],
+    [0,0,3,3,1,1,2,2]
+  ],
+  "solution": [
+    [0,3],
+    [1,7]
+  ],
+  "metadata": {
+    "patternFamily": "A",
+    "estimatedDifficulty": 1
+  }
+}
+
+The actual schema may be optimized, but it must preserve:
+
+- fixed grid
+- fixed regions
+- fixed solution
+- fixed difficulty metadata
+- fixed pattern family if used
+
+==================================================
+30. LEVEL GENERATOR
+==================================================
+
+Create a separate deterministic level-generation and validation tool.
+
+It must:
+
+1. Generate a valid solution.
+2. Ensure one item per row.
+3. Ensure one item per column.
+4. Ensure no orthogonal touching.
+5. Construct exactly N connected color regions.
+6. Ensure every color has exactly one connected component.
+7. Place exactly one solution item in each region.
+8. Test uniqueness.
+9. Calculate difficulty.
+10. Export fixed JSON.
+11. Validate the final exported levels.
+
+The game itself should load the generated fixed data.
+
+==================================================
+31. CRITICAL COLOR CONNECTIVITY TEST
+==================================================
+
+For every one of the 1000 levels:
+
+FOR EACH COLOR:
+
+- collect all cells of that color
+- run 4-direction BFS/DFS
+- count connected cells
+- compare against total cells for that color
+
+If:
+
+reachable != total
+
+THEN:
+
+FAIL LEVEL
+
+This means the color has more than one connected component.
+
+Build must fail.
+
+==================================================
+32. CRITICAL REGION ITEM TEST
+==================================================
+
+For every region:
+
+count solution items inside the region.
+
+Required:
+
+count == 1
+
+If:
+
+count == 0
+
+FAIL.
+
+If:
+
+count > 1
+
+FAIL.
+
+There must be exactly one item in every connected color region.
+
+==================================================
+33. COMPLETE LEVEL ACCEPTANCE GATE
+==================================================
+
+A level is valid ONLY if ALL of the following pass:
+
+✓ Grid size valid
+✓ Exactly N colors
+✓ Exactly N connected color regions
+✓ Every color has exactly ONE connected component
+✓ Every color region contains EXACTLY ONE solution item
+✓ Exactly ONE item per row
+✓ Exactly ONE item per column
+✓ No two items touch orthogonally
+✓ Official solution is valid
+✓ Official solution is unique
+✓ Difficulty is within target range
+✓ Level data can be loaded successfully
+
+If ANY test fails:
+
+LEVEL = INVALID
+
+Never ship it.
+
+==================================================
+34. VALIDATION COMMAND
+==================================================
+
+Create a command such as:
+
+validate-levels
+
+Expected output:
+
+1000 levels found
+
+Level 1: PASS
+Level 2: PASS
+...
+Level 1000: PASS
+
+Validation categories should include:
+
+Color Connectivity: PASS
+Region Item Count: PASS
+Row Constraint: PASS
+Column Constraint: PASS
+No-Touch Constraint: PASS
+Solution Validity: PASS
+Solution Uniqueness: PASS
+Data Integrity: PASS
+
+Final:
+
+1000 / 1000 LEVELS VALID
+
+If any level fails:
+
+PROCESS EXIT CODE MUST BE NON-ZERO
+
+GitHub Actions must stop and must NOT produce a successful APK artifact.
+
+==================================================
+35. TESTING
+==================================================
+
+Create automated tests for:
+
+- row constraint
+- column constraint
+- connected color regions
+- exactly one component per color
+- exactly one item per region
+- no-touch constraint
+- solution validity
+- solution uniqueness
+- hint system
+- item finder
+- logic hint
+- three-cell reveal
+- three-life system
+- level loading
+- progress saving
+- all 1000 levels
+
+CI must fail if any test fails.
+
+==================================================
+36. PERFORMANCE
+==================================================
+
+The game must run smoothly on low/mid-range Android devices.
+
+Do not run expensive puzzle-generation operations during normal gameplay.
+
+The shipped app should load fixed level data quickly.
+
+Precompute expensive generation and uniqueness operations during development.
+
+Use efficient data structures.
+
+==================================================
+37. SECURITY / INTEGRITY
+==================================================
+
+Do not trust user input as valid puzzle state.
+
+The game engine must independently verify:
+
+- row constraint
+- column constraint
+- region constraint
+- no-touch constraint
+
+Completion must be determined by the official fixed solution and rule validator.
+
+==================================================
+38. NO COPYRIGHT COPYING
+==================================================
+
+The reference image is only a conceptual reference.
+
+Do NOT reproduce:
+
+- Meowdoku branding
+- Oakever branding
+- Meowdoku name
+- cat artwork
+- exact characters
+- exact UI
+- exact layout
+- exact colors
+- exact typography
+- exact icons
+- exact animations
+- exact sounds
+- exact level layouts
+- source code
+- proprietary assets
+- proprietary text
+
+The resulting game must have an independently recognizable identity.
+
+==================================================
+39. REQUIRED DELIVERABLES
+==================================================
+
+Create ACTUAL PROJECT FILES.
+
+Required:
+
+1. Complete Android project
+2. Kotlin source code
+3. Puzzle engine
+4. Original UI
+5. Original assets/placeholders
+6. Fixed 1000 levels
+7. Fixed solutions
+8. Level generator
+9. Level validator
+10. Unique-solution solver
+11. Difficulty analyzer
+12. Three hint systems
+13. Three-life system
+14. Candidate marking
+15. Level map
+16. Save/progress system
+17. Settings
+18. Accessibility
+19. Automated tests
+20. GitHub Actions workflow
+21. README
+22. APK build configuration
+
+Do NOT give me only explanations.
+
+==================================================
+40. NO FAKE 1000 LEVELS
+==================================================
+
+This is critical.
+
+Do NOT create:
+
+- placeholder levels
+- duplicated levels pretending to be 1000
+- empty JSON entries
+- random runtime levels
+- levels with fake solutions
+- levels that have not been validated
+
+If manually creating 1000 levels is impractical:
+
+Build a deterministic generator.
+
+Generate exactly 1000 valid levels.
+
+Validate them.
+
+Export them into fixed JSON files.
+
+Then make the Android game read those exported fixed files.
+
+The final shipped game must have exactly 1000 fixed levels.
+
+==================================================
+41. SAME-PATTERN EASY/HARD SYSTEM
+==================================================
+
+Create pattern families.
+
+For selected families:
+
+Easy version:
+- more obvious region shapes
+- stronger deductions
+- fewer ambiguous candidates
+
+Hard version:
+- same underlying logical idea
+- more complex connected regions
+- fewer obvious deductions
+- longer deduction chains
+- more candidate elimination
+
+The relationship should be intentional.
+
+Every resulting level must still be a fixed independently validated puzzle.
+
+==================================================
+42. FINAL BUILD REQUIREMENT
+==================================================
+
+Before declaring completion, actually run:
+
+1. Code compilation
+2. Unit tests
+3. Level validation
+4. Connectivity validation
+5. Region item validation
+6. Row validation
+7. Column validation
+8. No-touch validation
+9. Uniqueness validation
+10. APK build
+
+Confirm:
+
+✓ Project compiles
+✓ Tests pass
+✓ Exactly 1000 levels exist
+✓ Exactly 1000 levels validate
+✓ Every level has a valid solution
+✓ Every color has exactly one connected component
+✓ Every color region contains exactly one item
+✓ Every row contains exactly one item
+✓ Every column contains exactly one item
+✓ No items touch orthogonally
+✓ Solutions are unique
+✓ Hint system works
+✓ Three-mistake system works
+✓ Progress saves
+✓ GitHub Actions workflow is valid
+✓ APK builds successfully
+
+Do NOT claim success for anything that has not actually been tested.
+
+==================================================
+43. DEVELOPMENT ORDER
+==================================================
+
+Follow this implementation order:
+
+PHASE 1:
+Architecture and project setup.
+
+PHASE 2:
+Puzzle rule engine.
+
+PHASE 3:
+Unique solution solver.
+
+PHASE 4:
+Connected-region generator.
+
+PHASE 5:
+Level generator.
+
+PHASE 6:
+Generate exactly 1000 levels.
+
+PHASE 7:
+Validate all 1000 levels.
+
+PHASE 8:
+Export fixed level data.
+
+PHASE 9:
+Android game UI.
+
+PHASE 10:
+Player interaction.
+
+PHASE 11:
+Hint systems.
+
+PHASE 12:
+Three-life system.
+
+PHASE 13:
+Progress/save system.
+
+PHASE 14:
+Level map.
+
+PHASE 15:
+Accessibility/settings.
+
+PHASE 16:
+Automated tests.
+
+PHASE 17:
+GitHub Actions.
+
+PHASE 18:
+Build APK.
+
+==================================================
+44. FINAL OBJECTIVE
+==================================================
+
+The final result must be a polished ORIGINAL Android logic puzzle game with:
+
+EXACTLY 1000 FIXED LEVELS
+
+8×8 through 15×15 grids
+
+EXACTLY ONE CONNECTED ORTHOGONAL REGION PER COLOR
+
+EXACTLY ONE ITEM PER COLOR REGION
+
+EXACTLY ONE ITEM PER ROW
+
+EXACTLY ONE ITEM PER COLUMN
+
+NO ORTHOGONAL ITEM TOUCHING
+
+DIAGONAL TOUCHING ALLOWED
+
+THREE MISTAKE CHANCES
+
+THREE DIFFERENT HINT SYSTEMS
+
+PROGRESSIVE DIFFICULTY
+
+RELATED EASY/HARD PATTERN FAMILIES
+
+OFFLINE-FIRST GAMEPLAY
+
+PERSISTENT PROGRESS
+
+ORIGINAL VISUAL DESIGN
+
+AUTOMATED LEVEL VALIDATION
+
+AUTOMATED TESTS
+
+GITHUB ACTIONS APK BUILD
+
+The repository must be ready to upload to GitHub and build an APK through GitHub Actions.
+
+MOST IMPORTANT RULE OF THE ENTIRE PROJECT:
+
+EVERY COLOR MUST BE EXACTLY ONE ORTHOGONALLY CONNECTED REGION, AND EVERY SUCH REGION MUST CONTAIN EXACTLY ONE ITEM IN THE OFFICIAL SOLUTION.
+
+THIS RULE IS ABSOLUTE AND MUST BE ENFORCED BY THE LEVEL GENERATOR, LEVEL VALIDATOR, GAME ENGINE, UNIT TESTS, AND GITHUB ACTIONS.

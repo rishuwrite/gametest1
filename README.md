@@ -16,7 +16,7 @@ The visual identity, UI, symbols, palette, and interaction model are independent
 - Level data is shipped under `app/src/main/assets/levels/`.
 - The game never generates a different puzzle at runtime.
 - Every shipped level is validated by `level-generator/validate_levels.py`.
-- Fixed starting clues are part of the puzzle state and are included in the uniqueness check.
+- Fixed starting clues are part of the puzzle state and are included in the uniqueness check. They prevent ambiguous solutions while keeping the official solution deterministic.
 
 ## Game systems
 
@@ -55,7 +55,9 @@ Data Integrity: PASS
 
 The project uses Kotlin, Jetpack Compose, and Material 3. GitHub Actions installs Gradle 8.9 and JDK 17, validates all levels, runs unit tests, and builds a debug APK artifact.
 
-The CI workflow is `.github/workflows/build-apk.yml`.
+The CI workflow is:
+
+`.github/workflows/build-apk.yml`
 
 ## Development generator
 
