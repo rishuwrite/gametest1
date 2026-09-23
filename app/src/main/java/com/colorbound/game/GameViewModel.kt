@@ -18,6 +18,8 @@ class GameViewModel(app: Application): AndroidViewModel(app) {
     var selected by mutableStateOf<Set<Cell>>(emptySet()); private set
     var candidates by mutableStateOf<Set<Cell>>(emptySet()); private set
     var revealedEmpty by mutableStateOf<Set<Cell>>(emptySet()); private set
+    // Cells automatically discarded after their color gets a prism. These are permanent/locked.
+    var autoDiscarded by mutableStateOf<Set<Cell>>(emptySet()); private set
     var reveals by mutableStateOf<List<Reveal>>(emptyList()); private set
     var lives by mutableStateOf(3); private set
     var mistakes by mutableStateOf(0); private set
@@ -43,10 +45,12 @@ class GameViewModel(app: Application): AndroidViewModel(app) {
         val level=levels.first { it.id==id }
         currentLevel=level
         selected=level.startingClues.toSet()
-        candidates=emptySet(); revealedEmpty=emptySet(); reveals=emptyList()
+        candidates=emptySet(); revealedEmpty=emptySet(); autoDiscarded=emptySet(); reveals=emptyList()
         lives=3; mistakes=0; hintsUsed=0; hintMessage=null; gameOver=false; completed=false
         startedAt=System.currentTimeMillis(); elapsedSeconds=0
         screen=Screen.GAME
+        // Starting clues are already fixed gems, so their color is also auto-discarded/locked.
+        selected.forEach { lockOtherCellsOfColor(level, it) }
         if (PuzzleEngine.isComplete(level,selected)) finishLevel()
     }
 
@@ -55,17 +59,34 @@ class GameViewModel(app: Application): AndroidViewModel(app) {
     fun tap(cell:Cell){
         if(gameOver||completed)return
         val level=currentLevel ?: return
-        if(cell in level.startingClues || cell in selected)return
+        if(cell in level.startingClues || cell in selected || cell in autoDiscarded || cell in revealedEmpty)return
         candidates=if(cell in candidates) candidates-cell else candidates+cell
+    }
+
+    // Swipe up on a cell = discard it. Swipe down = remove a normal discard.
+    // Auto-discarded cells are locked and cannot be restored.
+    fun swipeCell(cell:Cell, deltaY:Float){
+        if(gameOver||completed)return
+        val level=currentLevel ?: return
+        if(cell in level.startingClues || cell in selected || cell in autoDiscarded)return
+
+        if(deltaY < 0f){
+            revealedEmpty=revealedEmpty+cell
+            candidates=candidates-cell
+        }else if(deltaY > 0f){
+            revealedEmpty=revealedEmpty-cell
+        }
     }
 
     fun doubleTap(cell:Cell){
         if(gameOver||completed)return
         val level=currentLevel ?: return
-        if(cell in level.startingClues || cell in selected)return
+        if(cell in level.startingClues || cell in selected || cell in autoDiscarded)return
         candidates=candidates-cell
         if(PuzzleEngine.isCorrect(level,cell)){
             selected=selected+cell
+            revealedEmpty=revealedEmpty-cell
+            lockOtherCellsOfColor(level,cell)
             if(PuzzleEngine.isComplete(level,selected)) finishLevel()
         }else{
             mistakes++
@@ -102,6 +123,18 @@ class GameViewModel(app: Application): AndroidViewModel(app) {
         reveals=unresolved.map { Reveal(it,it in level.solution) }
         hintsUsed++
         if(PuzzleEngine.isComplete(level,selected)) finishLevel()
+    }
+
+    private fun lockOtherCellsOfColor(level:Level, gemCell:Cell){
+        val color=level.grid[gemCell.row][gemCell.col]
+        val sameColor=buildSet {
+            for(r in 0 until level.size) for(c in 0 until level.size){
+                if(level.grid[r][c]==color && (r!=gemCell.row || c!=gemCell.col)) add(Cell(r,c))
+            }
+        }
+        autoDiscarded=autoDiscarded+sameColor
+        revealedEmpty=revealedEmpty-sameColor
+        candidates=candidates-sameColor
     }
 
     private fun consumeHint():Boolean{
