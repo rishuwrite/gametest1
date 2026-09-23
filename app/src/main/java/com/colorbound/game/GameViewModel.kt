@@ -99,7 +99,10 @@ class GameViewModel(app: Application): AndroidViewModel(app) {
         if(!consumeHint())return
         val level=currentLevel ?: return
         val target=(level.solution-selected).firstOrNull() ?: return
-        selected=selected+target; candidates=candidates-target; hintsUsed++
+        selected=selected+target
+        candidates=candidates-target
+        lockOtherCellsOfColor(level,target)
+        hintsUsed++
         if(PuzzleEngine.isComplete(level,selected)) finishLevel()
     }
 
@@ -120,6 +123,8 @@ class GameViewModel(app: Application): AndroidViewModel(app) {
         var sel=selected; var empty=revealedEmpty
         unresolved.forEach { cell -> if(cell in level.solution) sel=sel+cell else empty=empty+cell }
         selected=sel; revealedEmpty=empty
+        // Any solution cell revealed by a hint is still a real gem, so lock its color.
+        unresolved.filter { it in level.solution }.forEach { lockOtherCellsOfColor(level,it) }
         reveals=unresolved.map { Reveal(it,it in level.solution) }
         hintsUsed++
         if(PuzzleEngine.isComplete(level,selected)) finishLevel()
