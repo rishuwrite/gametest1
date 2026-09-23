@@ -170,12 +170,10 @@ fun ColorboundApp(vm:GameViewModel=viewModel()){
                 if(startCell==null)return@awaitEachGesture
 
                 var totalDx=0f
-                var totalDx=0f
                 var totalDy=0f
                 var moved=false
                 drag(down.id){change->
                     moved=true
-                    totalDx+=change.position.x-change.previousPosition.x
                     totalDx+=change.position.x-change.previousPosition.x
                     totalDy+=change.position.y-change.previousPosition.y
                     change.consume()
