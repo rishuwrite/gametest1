@@ -218,8 +218,10 @@ fun ColorboundApp(vm:GameViewModel=viewModel()){
                         drawCircle(Accent.copy(alpha=.95f),radius=cell*.12f,center=Offset(x+cell*.5f,y+cell*.5f),style=Stroke(width=cell*.035f))
                         drawCircle(Accent.copy(alpha=.95f),radius=cell*.035f,center=Offset(x+cell*.5f,y+cell*.5f))
                     }else{
-                        drawLine(Ink.copy(alpha=alpha),Offset(x+cell*.30f,y+cell*.30f),Offset(x+cell*.70f,y+cell*.70f),cell*.045f,StrokeCap.Round)
-                        drawLine(Ink.copy(alpha=alpha),Offset(x+cell*.70f,y+cell*.30f),Offset(x+cell*.30f,y+cell*.70f),cell*.045f,StrokeCap.Round)
+                        // Manual discard uses the exact same bold X treatment as auto-discard.
+                        drawRoundRect(Ink.copy(alpha=.28f),topLeft=Offset(x+cell*.055f,y+cell*.055f),size=Size(cell*.89f,cell*.89f),cornerRadius=CornerRadius(cell*.14f),style=Stroke(width=cell*.035f))
+                        drawLine(Color.White.copy(alpha=.92f),Offset(x+cell*.22f,y+cell*.22f),Offset(x+cell*.78f,y+cell*.78f),cell*.075f,StrokeCap.Round)
+                        drawLine(Color.White.copy(alpha=.92f),Offset(x+cell*.78f,y+cell*.22f),Offset(x+cell*.22f,y+cell*.78f),cell*.075f,StrokeCap.Round)
                     }
                 }
                 if(cc in vm.candidates){ drawCircle(Ink.copy(alpha=.9f),radius=cell*.10f,center=Offset(x+cell/2,y+cell/2)) }
